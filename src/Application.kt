@@ -22,6 +22,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -33,6 +34,7 @@ fun Application.module(testing: Boolean = false) {
             serializer = GsonSerializer()
         }
     }
+
     runBlocking {
         // Sample for making a HTTP Client request
         /*
@@ -45,8 +47,11 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+
         get("/") {
-            call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
+            //call.respondText("HELLO WORLD!", contentType = ContentType.Text.Plain)
+            val htmlContent = client.get<String>("https://en.wikipedia.org/wiki/Main_Page")
+            call.respondText(htmlContent,contentType = ContentType.Text.Plain)
         }
 
         get("/html-dsl") {
@@ -79,10 +84,14 @@ fun Application.module(testing: Boolean = false) {
         get("/json/jackson") {
             call.respond(mapOf("hello" to "world"))
         }
+
+        get("/get-json-data"){
+            val jsonJSonSample = client.get<JsonSample>("http://0.0.0.0:8080/json/jackson")
+            val hello = jsonJSonSample.hello
+            call.respondText("${jsonJSonSample.toString()} $hello",contentType = ContentType.Text.Plain)
+        }
     }
 }
-
-data class JsonSampleClass(val hello: String)
 
 fun FlowOrMetaDataContent.styleCss(builder: CSSBuilder.() -> Unit) {
     style(type = ContentType.Text.CSS.toString()) {
